@@ -1,0 +1,20 @@
+=== FINAL RECOMMENDATIONS ===
+FEATURE ENGINEERING:
+  Drop near-zero-variance categoricals: ['WarmAirHeatingSystem', 'CylinderStat', 'CombinedCylinder']
+  Drop float NZV columns:               None found
+  Drop CountyName (geographic identifier, not building feature)
+
+DIMENSIONALITY REDUCTION:
+  PCA:  24 components -> 80% variance
+  PCA:  31 components -> 90% variance  <-- RECOMMENDED for regression
+  PCA:  37 components -> 95% variance
+  LDA:  10 components (class-driven, best for classification)
+
+DOWNSTREAM MODELLING:
+  BerRating regression     -> use PCA n=31 features
+  DwellingType classification -> use LDA features (better cluster separation)
+  Random Forest baseline   -> original features viable (tree-based, scale-free)
+
+PLOTS SAVED:
+  pca_scree.png, pca_scatter.png, pca_biplot.png, pca_heatmap.png
+  lda_scatter.png, lda_variance.png
