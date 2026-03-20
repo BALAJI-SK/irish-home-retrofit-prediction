@@ -30,47 +30,47 @@ This document describes the full 6-step dimensionality-reduction analysis pipeli
 
 ---
 
-## Plots Saved
+## Plots
 
 ### PCA — Scree Plot
 *Scree plot + cumulative variance with 90%/95% thresholds*
 
-![pca_scree](/Users/balajisk/Developer/Masters/data_mining_%26_data_analytical/data_mining_ber/irish-home-retrofit-prediction/pca_scree.png)
+![pca_scree](pca_scree.png)
 
 ---
 
 ### PCA — PC1 vs PC2 Scatter (colored by BerRating)
 *PC1 vs PC2 scatter colored by BerRating (20k sample)*
 
-![pca_scatter](/Users/balajisk/Developer/Masters/data_mining_%26_data_analytical/data_mining_ber/irish-home-retrofit-prediction/pca_scatter.png)
+![pca_scatter](pca_scatter.png)
 
 ---
 
 ### PCA — Biplot (Top-10 Loading Arrows)
 *PC1/PC2 biplot with top-10 feature loading arrows*
 
-![pca_biplot](/Users/balajisk/Developer/Masters/data_mining_%26_data_analytical/data_mining_ber/irish-home-retrofit-prediction/pca_biplot.png)
+![pca_biplot](pca_biplot.png)
 
 ---
 
 ### PCA — Feature Loadings Heatmap (PC1–PC5)
 *Heatmap of top-15 feature loadings across PC1–PC5*
 
-![pca_heatmap](/Users/balajisk/Developer/Masters/data_mining_%26_data_analytical/data_mining_ber/irish-home-retrofit-prediction/pca_heatmap.png)
+![pca_heatmap](pca_heatmap.png)
 
 ---
 
 ### LDA — LD1 vs LD2 Scatter (colored by DwellingTypeDescr)
 *LD1 vs LD2 colored by dwelling type class*
 
-![lda_scatter](/Users/balajisk/Developer/Masters/data_mining_%26_data_analytical/data_mining_ber/irish-home-retrofit-prediction/lda_scatter.png)
+![lda_scatter](lda_scatter.png)
 
 ---
 
 ### LDA — Explained Variance Ratio
 *LDA explained variance ratio bar chart*
 
-![lda_variance](/Users/balajisk/Developer/Masters/data_mining_%26_data_analytical/data_mining_ber/irish-home-retrofit-prediction/lda_variance.png)
+![lda_variance](lda_variance.png)
 
 ---
 
