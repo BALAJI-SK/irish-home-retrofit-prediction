@@ -1,0 +1,81 @@
+=== MULTICOLLINEARITY AUDIT SUMMARY ===
+
+--- Collinearity Clusters ---
+  Size Cluster: ['WallArea', 'RoofArea', 'FloorArea', 'WindowArea', 'DoorArea'] -> Keeper: WindowArea
+  Insulation Cluster: ['UValueWall', 'UValueRoof', 'UValueFloor', 'UValueWindow', 'UvalueDoor'] -> Keeper: UValueWall
+  Efficiency Cluster: ['HSMainSystemEfficiency', 'WHMainSystemEff', 'HSSupplSystemEff', 'HSEffAdjFactor', 'WHEffAdjFactor'] -> Keeper: WHMainSystemEff
+  Heat Fraction: ['HSSupplHeatFraction', 'SHRenewableResources', 'WHRenewableResources', 'DistributionLosses'] -> Keeper: HSSupplHeatFraction
+  Ventilation Cluster: ['NoOfFansAndVents', 'PercentageDraughtStripped', 'ThermalBridgingFactor'] -> Keeper: ThermalBridgingFactor
+  Building Cluster: ['NoStoreys', 'NoOfSidesSheltered', 'LivingAreaPercent', 'Year_of_Construction'] -> Keeper: Year_of_Construction
+  Heating Control: ['NoCentralHeatingPumps', 'HeatSystemControlCat', 'HeatSystemResponseCat'] -> Keeper: HeatSystemControlCat
+  Singletons: ['SupplWHFuel', 'SupplSHFuel'] -> Keeper: SupplWHFuel
+
+--- Feature Recommendations ---
+  SHRenewableResources           VIF=   77.9  r=  0.2364  [Drop] Collinear with HSSupplHeatFraction (VIF=77.9); HSSupplHeatFraction has higher |r|=0.307
+  WHRenewableResources           VIF=   77.9  r=   0.237  [Drop] Collinear with HSSupplHeatFraction (VIF=77.9); HSSupplHeatFraction has higher |r|=0.307
+  HSEffAdjFactor                 VIF=   26.2  r=  0.0344  [Drop] Collinear with WHMainSystemEff (VIF=26.2); WHMainSystemEff has higher |r|=0.436
+  WHEffAdjFactor                 VIF=   25.9  r=  0.0308  [Drop] Collinear with WHMainSystemEff (VIF=25.9); WHMainSystemEff has higher |r|=0.436
+  WHMainSystemEff                VIF=    5.0  r= -0.4357  [Keep] Low VIF, independent feature
+  RoofArea                       VIF=    4.8  r= -0.0524  [Keep] Low VIF, independent feature
+  HSMainSystemEfficiency         VIF=    4.8  r= -0.4253  [Keep] Low VIF, independent feature
+  HSSupplHeatFraction            VIF=    3.3  r=  0.3074  [Keep] Low VIF, independent feature
+  WallArea                       VIF=    3.2  r= -0.0814  [Keep] Low VIF, independent feature
+  HSSupplSystemEff               VIF=    2.6  r=  0.1669  [Keep] Low VIF, independent feature
+  UValueWall                     VIF=    2.4  r=  0.6569  [Keep] Low VIF, independent feature
+  UValueFloor                    VIF=    2.4  r=  0.5556  [Keep] Low VIF, independent feature
+  UValueWindow                   VIF=    2.3  r=  0.6185  [Keep] Low VIF, independent feature
+  Year_of_Construction           VIF=    2.2  r=  -0.559  [Keep] Low VIF, independent feature
+  WindowArea                     VIF=    2.2  r=  -0.192  [Keep] Low VIF, independent feature
+  DistributionLosses             VIF=    2.0  r= -0.1427  [Keep] Low VIF, independent feature
+  LivingAreaPercent              VIF=    2.0  r=   0.069  [Keep] Low VIF, independent feature
+  UValueRoof                     VIF=    1.9  r=  0.5912  [Keep] Low VIF, independent feature
+  NoStoreys                      VIF=    1.9  r= -0.1465  [Keep] Low VIF, independent feature
+  HeatSystemControlCat           VIF=    1.9  r= -0.3425  [Keep] Low VIF, independent feature
+  UvalueDoor                     VIF=    1.7  r=  0.2659  [Keep] Low VIF, independent feature
+  ThermalBridgingFactor          VIF=    1.6  r=  0.3178  [Keep] Low VIF, independent feature
+  NoCentralHeatingPumps          VIF=    1.5  r=  -0.216  [Keep] Low VIF, independent feature
+  DoorArea                       VIF=    1.4  r=  0.0433  [Keep] Low VIF, independent feature
+  SupplWHFuel                    VIF=    1.4  r=  0.2682  [Keep] Low VIF, independent feature
+  NoOfSidesSheltered             VIF=    1.3  r=  -0.001  [Keep] Low VIF, independent feature
+  PercentageDraughtStripped      VIF=    1.2  r=  -0.147  [Keep] Low VIF, independent feature
+  HeatSystemResponseCat          VIF=    1.2  r=  0.1902  [Keep] Low VIF, independent feature
+  NoOfFansAndVents               VIF=    1.1  r= -0.1431  [Keep] Low VIF, independent feature
+  SupplSHFuel                    VIF=    1.0  r= -0.0025  [Keep] Low VIF, independent feature
+  FloorArea                      VIF=    5.8  r=   -0.05  [Monitor] Moderate VIF, weak BerRating signal
+
+FINAL KEEP SET (26 continuous features):
+  WHMainSystemEff
+  RoofArea
+  HSMainSystemEfficiency
+  HSSupplHeatFraction
+  WallArea
+  HSSupplSystemEff
+  UValueWall
+  UValueFloor
+  UValueWindow
+  Year_of_Construction
+  WindowArea
+  DistributionLosses
+  LivingAreaPercent
+  UValueRoof
+  NoStoreys
+  HeatSystemControlCat
+  UvalueDoor
+  ThermalBridgingFactor
+  NoCentralHeatingPumps
+  DoorArea
+  SupplWHFuel
+  NoOfSidesSheltered
+  PercentageDraughtStripped
+  HeatSystemResponseCat
+  NoOfFansAndVents
+  SupplSHFuel
+
+MONITOR SET (1 features):
+  FloorArea
+
+DROP SET (4 features):
+  SHRenewableResources
+  WHRenewableResources
+  HSEffAdjFactor
+  WHEffAdjFactor

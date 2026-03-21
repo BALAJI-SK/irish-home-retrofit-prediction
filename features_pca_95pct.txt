@@ -1,0 +1,46 @@
+=== PCA Feature Column Report (95% variance, 23 PCs) ===
+ Rank   Aggregate Loading  Feature
+------------------------------------------------------------
+    1              3.8044  PercentageDraughtStripped
+    2              3.7850  HeatSystemResponseCat
+    3              3.7774  SupplWHFuel
+    4              3.7517  ThermalBridgingFactor
+    5              3.6973  HeatSystemControlCat
+    6              3.5407  DistributionLosses
+    7              3.5196  UValueRoof
+    8              3.4581  LivingAreaPercent
+    9              3.4350  NoCentralHeatingPumps
+   10              3.3122  NoOfFansAndVents
+   11              3.3074  DoorArea
+   12              3.2133  Year_of_Construction
+   13              3.1386  NoOfSidesSheltered
+   14              3.1123  UValueFloor
+   15              3.0894  NoStoreys
+   16              3.0800  UvalueDoor
+   17              3.0071  WindowArea
+   18              2.9421  UValueWindow
+   19              2.8554  UValueWall
+   20              2.7809  HSMainSystemEfficiency
+   21              2.6998  HSSupplSystemEff
+   22              2.5894  WHMainSystemEff
+   23              2.4842  SHRenewableResources
+   24              2.4797  WHRenewableResources
+   25              2.3403  FloorArea
+   26              2.3166  HSEffAdjFactor
+   27              2.3146  WHEffAdjFactor
+   28              2.2819  HSSupplHeatFraction
+   29              2.1717  RoofArea
+   30              1.9101  WallArea
+   31              1.7512  SupplSHFuel
+
+--- Bottom 10 (lowest contribution -- candidates to drop) ---
+  WHMainSystemEff                                2.5894
+  SHRenewableResources                           2.4842
+  WHRenewableResources                           2.4797
+  FloorArea                                      2.3403
+  HSEffAdjFactor                                 2.3166
+  WHEffAdjFactor                                 2.3146
+  HSSupplHeatFraction                            2.2819
+  RoofArea                                       2.1717
+  WallArea                                       1.9101
+  SupplSHFuel                                    1.7512
