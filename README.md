@@ -12,7 +12,7 @@ This repository contains comprehensive documentation covering the entire data en
 2. **[Row Imputation & Statistical Analysis](imputation_analysis_report.md)**: 
    Documents the methodology for handling missing data, categorizing NMAR vs. MAR blocks, applying Contextual Regression Imputation vs Mode, and using the Interquartile Range (IQR) for outlier suppression to preserve distribution integrity.
 
-3. **[PCA, LDA, MCA & FAMD Dimensionality Reduction](pca_lda_report.md)**: 
+3. **[PCA, LDA, MCA & FAMD Dimensionality Reduction](pca_lda_report_v2.md)**: 
    The capstone exploratory data analysis report. It uses four distinct dimensionality reduction methods across continuous and categorical data types to extract the final feature sets. Includes a rigorous VIF/Pearson multicollinearity audit resulting in 35 final features suitable for multiple modelling pathways.
 
 4. **[Initial Row Cleaning Discovery](row_cleaning_balaji_14_mar.md)**: 
