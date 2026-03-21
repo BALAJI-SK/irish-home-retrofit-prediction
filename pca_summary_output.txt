@@ -296,3 +296,83 @@ Components fitted: 20
     DwellingTypeDescr__Mid-floor apartment             0.0674
 
 Plots saved: mca_scree.png, mca_scatter.png
+
+
+Columns in data: ['CountyName', 'DwellingTypeDescr', 'Year_of_Construction', 'BerRating', 'UValueWall', 'UValueRoof', 'UValueFloor', 'UValueWindow', 'UvalueDoor', 'WallArea', 'RoofArea', 'FloorArea', 'WindowArea', 'DoorArea', 'NoStoreys', 'HSMainSystemEfficiency', 'HSEffAdjFactor', 'HSSupplHeatFraction', 'HSSupplSystemEff', 'WHMainSystemEff', 'WHEffAdjFactor', 'SupplSHFuel', 'SupplWHFuel', 'SHRenewableResources', 'WHRenewableResources', 'NoOfFansAndVents', 'VentilationMethod', 'StructureType', 'SuspendedWoodenFloor', 'PercentageDraughtStripped', 'NoOfSidesSheltered', 'HeatSystemControlCat', 'HeatSystemResponseCat', 'NoCentralHeatingPumps', 'CHBoilerThermostatControlled', 'OBBoilerThermostatControlled', 'OBPumpInsideDwelling', 'WarmAirHeatingSystem', 'UndergroundHeating', 'DistributionLosses', 'CylinderStat', 'CombinedCylinder', 'ThermalBridgingFactor', 'ThermalMassCategory', 'LivingAreaPercent']
+
+Categorical columns used: ['DwellingTypeDescr', 'VentilationMethod', 'StructureType', 'SuspendedWoodenFloor', 'CHBoilerThermostatControlled', 'OBBoilerThermostatControlled', 'OBPumpInsideDwelling', 'UndergroundHeating', 'ThermalMassCategory']
+Continuous columns used: 31 ['Year_of_Construction', 'UValueWall', 'UValueRoof', 'UValueFloor', 'UValueWindow', 'UvalueDoor', 'WallArea', 'RoofArea', 'FloorArea', 'WindowArea', 'DoorArea', 'NoStoreys', 'HSMainSystemEfficiency', 'HSEffAdjFactor', 'HSSupplHeatFraction', 'HSSupplSystemEff', 'WHMainSystemEff', 'WHEffAdjFactor', 'SupplSHFuel', 'SupplWHFuel', 'SHRenewableResources', 'WHRenewableResources', 'NoOfFansAndVents', 'PercentageDraughtStripped', 'NoOfSidesSheltered', 'HeatSystemControlCat', 'HeatSystemResponseCat', 'NoCentralHeatingPumps', 'DistributionLosses', 'ThermalBridgingFactor', 'LivingAreaPercent']
+
+--- Fix 2: LDA Top Discriminators ---
+Top 5 LD1 Features:
+  ThermalBridgingFactor: -6.0600 (abs: 6.0600)
+  HSSupplHeatFraction: 3.8741 (abs: 3.8741)
+  UValueFloor: 2.6006 (abs: 2.6006)
+  NoCentralHeatingPumps: 0.3304 (abs: 0.3304)
+  HSEffAdjFactor: 0.3298 (abs: 0.3298)
+Top 5 LD2 Features:
+  ThermalBridgingFactor: -5.8453 (abs: 5.8453)
+  HSSupplHeatFraction: 2.8529 (abs: 2.8529)
+  NoStoreys: 2.0104 (abs: 2.0104)
+  UValueFloor: 0.5045 (abs: 0.5045)
+  NoCentralHeatingPumps: 0.3778 (abs: 0.3778)
+
+--- Fix 4: Cramers V ---
+CHBoilerThermostatControlled | OBBoilerThermostatControlled | 0.325 | [Interpretation]
+VentilationMethod | UndergroundHeating | 0.311 | [Interpretation]
+
+--- Fix 5: Eta Squared ---
+DwellingTypeDescr | FloorArea | 0.576 | Large
+DwellingTypeDescr | RoofArea | 0.553 | Large
+DwellingTypeDescr | WallArea | 0.493 | Large
+DwellingTypeDescr | LivingAreaPercent | 0.446 | Large
+DwellingTypeDescr | NoStoreys | 0.336 | Large
+VentilationMethod | WHMainSystemEff | 0.326 | Large
+StructureType | ThermalBridgingFactor | 0.271 | Large
+VentilationMethod | HSMainSystemEfficiency | 0.268 | Large
+VentilationMethod | UValueWindow | 0.228 | Large
+DwellingTypeDescr | UValueFloor | 0.225 | Large
+DwellingTypeDescr | WindowArea | 0.222 | Large
+VentilationMethod | ThermalBridgingFactor | 0.220 | Large
+DwellingTypeDescr | NoOfSidesSheltered | 0.199 | Large
+StructureType | PercentageDraughtStripped | 0.182 | Large
+VentilationMethod | HSSupplHeatFraction | 0.178 | Large
+DwellingTypeDescr | DistributionLosses | 0.174 | Large
+DwellingTypeDescr | NoCentralHeatingPumps | 0.174 | Large
+UndergroundHeating | HSMainSystemEfficiency | 0.166 | Large
+CHBoilerThermostatControlled | UValueWindow | 0.165 | Large
+CHBoilerThermostatControlled | HeatSystemControlCat | 0.159 | Large
+CHBoilerThermostatControlled | HSMainSystemEfficiency | 0.156 | Large
+DwellingTypeDescr | UvalueDoor | 0.151 | Large
+VentilationMethod | UValueFloor | 0.150 | Large
+UndergroundHeating | HeatSystemResponseCat | 0.147 | Large
+VentilationMethod | HeatSystemControlCat | 0.135 | Medium
+UndergroundHeating | WHMainSystemEff | 0.133 | Medium
+CHBoilerThermostatControlled | SupplWHFuel | 0.129 | Medium
+CHBoilerThermostatControlled | WHMainSystemEff | 0.124 | Medium
+VentilationMethod | UvalueDoor | 0.122 | Medium
+DwellingTypeDescr | DoorArea | 0.104 | Medium
+SuspendedWoodenFloor | UValueWall | 0.104 | Medium
+VentilationMethod | Year_of_Construction | 0.101 | Medium
+StructureType | UValueWindow | 0.099 | Medium
+CHBoilerThermostatControlled | NoCentralHeatingPumps | 0.092 | Medium
+VentilationMethod | HSSupplSystemEff | 0.089 | Medium
+DwellingTypeDescr | HSSupplHeatFraction | 0.082 | Medium
+VentilationMethod | UValueWall | 0.082 | Medium
+CHBoilerThermostatControlled | UValueWall | 0.076 | Medium
+CHBoilerThermostatControlled | ThermalBridgingFactor | 0.076 | Medium
+VentilationMethod | NoOfFansAndVents | 0.076 | Medium
+CHBoilerThermostatControlled | UValueFloor | 0.074 | Medium
+CHBoilerThermostatControlled | HSSupplHeatFraction | 0.074 | Medium
+CHBoilerThermostatControlled | Year_of_Construction | 0.072 | Medium
+UndergroundHeating | WallArea | 0.072 | Medium
+UndergroundHeating | UValueWindow | 0.071 | Medium
+VentilationMethod | WHRenewableResources | 0.070 | Medium
+VentilationMethod | HSEffAdjFactor | 0.070 | Medium
+VentilationMethod | WHEffAdjFactor | 0.069 | Medium
+StructureType | UValueFloor | 0.069 | Medium
+VentilationMethod | SHRenewableResources | 0.069 | Medium
+UndergroundHeating | WindowArea | 0.066 | Medium
+StructureType | HSMainSystemEfficiency | 0.065 | Medium
+StructureType | HeatSystemControlCat | 0.062 | Medium
+SuspendedWoodenFloor | Year_of_Construction | 0.062 | Medium
