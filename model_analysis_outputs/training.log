@@ -1,0 +1,51 @@
+2026-03-24 09:22:17,373 [INFO] ============================================================
+2026-03-24 09:22:17,374 [INFO] STEP 1: Loading and inspecting data
+2026-03-24 09:22:17,374 [INFO] ============================================================
+2026-03-24 09:22:19,282 [INFO] Shape: (1351582, 46)
+2026-03-24 09:22:19,284 [INFO] Memory usage: 191.9 MB
+2026-03-24 09:22:19,332 [INFO] Dropped collinear columns: ['SHRenewableResources', 'WHRenewableResources', 'HSEffAdjFactor', 'WHEffAdjFactor']
+2026-03-24 09:22:19,332 [INFO] Categorical features: 14
+2026-03-24 09:22:19,332 [INFO] Numerical features  : 27
+2026-03-24 09:22:19,332 [INFO] Target              : BerRating
+2026-03-24 09:22:19,350 [INFO] 
+Target statistics:
+count    1.351582e+06
+mean     2.059018e+02
+std      1.614298e+02
+min     -4.729900e+02
+25%      1.160200e+02
+50%      1.843100e+02
+75%      2.581400e+02
+max      3.213494e+04
+2026-03-24 09:22:19,852 [INFO] Saved: data_summary_statistics.csv
+2026-03-24 09:22:20,739 [INFO] 
+Top 10 features correlated with BerRating:
+UValueWall                0.656901
+UValueWindow              0.618511
+UValueRoof                0.591233
+Year_of_Construction     -0.558963
+UValueFloor               0.555559
+WHMainSystemEff          -0.442646
+HSMainSystemEfficiency   -0.432560
+HeatSystemControlCat     -0.342528
+ThermalBridgingFactor     0.317791
+HSSupplHeatFraction       0.302279
+2026-03-24 09:22:20,739 [INFO] 
+============================================================
+2026-03-24 09:22:20,739 [INFO] STEP 2: Preprocessing
+2026-03-24 09:22:20,739 [INFO] ============================================================
+2026-03-24 09:22:21,049 [INFO] Train size: 1,081,265  |  Test size: 270,317
+2026-03-24 09:22:21,049 [INFO] 
+============================================================
+2026-03-24 09:22:21,049 [INFO] STEP 3: Model definitions
+2026-03-24 09:22:21,049 [INFO] ============================================================
+2026-03-24 09:22:23,447 [INFO] 
+============================================================
+2026-03-24 09:22:23,448 [INFO] STEP 4: Hyperparameter tuning & training
+2026-03-24 09:22:23,448 [INFO] ============================================================
+2026-03-24 09:22:23,448 [INFO] 
+--- LightGBM ---
+2026-03-24 09:54:51,670 [INFO] Best params: {'subsample': 0.7, 'reg_lambda': 1.0, 'reg_alpha': 0.5, 'num_leaves': 63, 'n_estimators': 800, 'min_child_samples': 20, 'max_depth': -1, 'learning_rate': 0.08, 'colsample_bytree': 1.0}
+2026-03-24 09:54:59,876 [INFO] LightGBM  Train R²=0.9722  Test R²=0.9345  CV=0.8688±0.0811  Time=1948.2s
+2026-03-24 09:54:59,876 [INFO] 
+--- Random Forest ---
