@@ -1,0 +1,52 @@
+=================================================================
+Irish Home Retrofit — BER Rating Prediction: ML Pipeline
+=================================================================
+Dataset       : 46_Col_final_with_county.parquet
+Total rows    : 1,324,561  (after outlier trim)
+Train set     : 1,059,648 rows  (80%)
+Test set      : 264,913  rows  (20%, held-out)
+Tuning subset : 200,000 rows  (stratified from train set)
+CV            : 5-fold KFold
+Tuning        : RandomizedSearchCV  (20 iterations)
+Target        : BerRating  (kWh/m²/yr)
+
+-----------------------------------------------------------------
+RESULTS
+-----------------------------------------------------------------
+
+Ridge
+  CV R²        : 0.836 ± 0.001
+  Train R²     : 0.8368
+  Test R²      : 0.8369
+  Test RMSE    : 50.7 kWh/m²/yr
+  Test MAE     : 35.61 kWh/m²/yr
+  Tune time    : 17.8s
+  Train time   : 7.4s
+  Best Params  : {'model__alpha': np.float64(15.264179671752334)}
+
+Random Forest
+  CV R²        : 0.9327 ± 0.001
+  Train R²     : 0.99
+  Test R²      : 0.947
+  Test RMSE    : 28.91 kWh/m²/yr
+  Test MAE     : 17.44 kWh/m²/yr
+  Tune time    : 2519.0s
+  Train time   : 424.7s
+  Best Params  : {'model__n_estimators': 300, 'model__min_samples_split': 5, 'model__min_samples_leaf': 1, 'model__max_features': 0.5, 'model__max_depth': 35}
+
+LightGBM
+  CV R²        : 0.9603 ± 0.001
+  Train R²     : 0.9712
+  Test R²      : 0.9655
+  Test RMSE    : 23.34 kWh/m²/yr
+  Test MAE     : 14.72 kWh/m²/yr
+  Tune time    : 309.9s
+  Train time   : 19.4s
+  Best Params  : {'model__subsample': 1.0, 'model__reg_lambda': 1.0, 'model__reg_alpha': 0.1, 'model__num_leaves': 63, 'model__n_estimators': 800, 'model__min_child_samples': 50, 'model__max_depth': -1, 'model__learning_rate': 0.1, 'model__colsample_bytree': 0.9}
+
+=================================================================
+BEST MODEL: LightGBM
+  Test R²   = 0.9655
+  Test RMSE = 23.34
+  Test MAE  = 14.72
+=================================================================

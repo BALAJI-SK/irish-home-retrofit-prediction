@@ -1,0 +1,52 @@
+=================================================================
+Irish Home Retrofit — BER Rating Prediction: Model Comparison
+=================================================================
+Dataset  : 46_Col_final_with_county.parquet (1.35M rows)
+Sample   : 50,000 rows (stratified by BerRating deciles)
+Split    : 80% train / 20% test  (40,000 train | 10,000 test)
+CV Folds : 5-fold KFold
+Target   : BerRating (numerical regression, kWh/m²/yr)
+Outliers : Removed <1st and >99th percentile
+
+-----------------------------------------------------------------
+MODEL RESULTS
+-----------------------------------------------------------------
+
+1. LightGBM
+   Train R²      : 0.9811
+   Test R²       : 0.9508   ← BEST
+   CV R² (mean)  : 0.9504 ± 0.0008
+   Test RMSE     : 27.66 kWh/m²/yr
+   Test MAE      : 17.34 kWh/m²/yr
+   Training Time : 310s
+   Best Params   : n_estimators=800, num_leaves=31, lr=0.08,
+                   max_depth=6, subsample=0.7, colsample_bytree=0.9
+
+2. Random Forest
+   Train R²      : 0.9852
+   Test R²       : 0.9231
+   CV R² (mean)  : 0.9189 ± 0.0007
+   Test RMSE     : 34.56 kWh/m²/yr
+   Test MAE      : 21.89 kWh/m²/yr
+   Training Time : 230s
+   Best Params   : n_estimators=300, max_depth=35, max_features=0.5
+
+3. Ridge Regression
+   Train R²      : 0.8380
+   Test R²       : 0.8342
+   CV R² (mean)  : 0.8376 ± 0.0007
+   Test RMSE     : 50.76 kWh/m²/yr
+   Test MAE      : 35.71 kWh/m²/yr
+   Training Time : 5.4s
+   Best Params   : alpha=32.9
+
+-----------------------------------------------------------------
+WINNER: LightGBM
+  - Highest Test R² (0.9508) — explains 95.1% of variance
+  - Lowest RMSE (27.66) — most accurate predictions
+  - Lowest MAE (17.34) — smallest average error
+  - CV R² tightly matches Test R² (no overfitting)
+  - Random Forest shows slight overfitting (Train R²=0.985 vs Test=0.923)
+  - Ridge gap (Test R²=0.834) confirms strong non-linear relationships
+    in BER energy efficiency — linear models insufficient
+=================================================================
