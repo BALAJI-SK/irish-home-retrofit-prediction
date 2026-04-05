@@ -1,3 +1,9 @@
 *.csv
 *.parquet
 .agents/
+
+# macOS
+.DS_Store
+
+# JetBrains IDE
+.idea/
