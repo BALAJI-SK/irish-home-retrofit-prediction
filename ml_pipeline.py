@@ -36,6 +36,7 @@ from sklearn.pipeline import Pipeline
 from sklearn.compose import ColumnTransformer
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 import lightgbm as lgb
+import xgboost as xgb
 
 warnings.filterwarnings("ignore")
 
@@ -64,16 +65,6 @@ print("=" * 65)
 df = pd.read_parquet(DATA_PATH)
 print(f"  Raw shape            : {df.shape}")
 
-DROP_COLS = ["SHRenewableResources", "WHRenewableResources",
-             "HSEffAdjFactor", "WHEffAdjFactor"]
-df.drop(columns=[c for c in DROP_COLS if c in df.columns], inplace=True)
-
-# Remove extreme outliers in target (1st–99th percentile)
-q_lo = df[TARGET].quantile(0.01)
-q_hi = df[TARGET].quantile(0.99)
-df   = df[(df[TARGET] >= q_lo) & (df[TARGET] <= q_hi)]
-print(f"  After outlier trim   : {df.shape}")
-print(f"  Target range         : [{q_lo:.1f}, {q_hi:.1f}] kWh/m²/yr")
 
 X = df.drop(columns=[TARGET])
 y = df[TARGET].values
@@ -167,6 +158,23 @@ models_cfg = {
             "model__reg_lambda":        [0, 0.1, 1.0],
         },
     },
+    "XGBoost": {
+        "pipeline": Pipeline([
+            ("pre",   tree_pre),
+            ("model", xgb.XGBRegressor(random_state=RANDOM_SEED, n_jobs=-1,
+                                       tree_method="hist", verbosity=0)),
+        ]),
+        "param_dist": {
+            "model__n_estimators":      [200, 400, 600, 800],
+            "model__max_depth":         [4, 6, 8, 10],
+            "model__learning_rate":     [0.05, 0.08, 0.1, 0.15],
+            "model__min_child_weight":  [1, 5, 10],
+            "model__subsample":         [0.7, 0.8, 1.0],
+            "model__colsample_bytree":  [0.7, 0.9, 1.0],
+            "model__reg_alpha":         [0, 0.1, 0.5],
+            "model__reg_lambda":        [0.5, 1.0, 2.0],
+        },
+    },
 }
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -240,20 +248,22 @@ for name, cfg in models_cfg.items():
     y_pred_train = final_pipe.predict(X_train)
     y_pred_test  = final_pipe.predict(X_test)
 
-    train_r2  = r2_score(y_train,   y_pred_train)
-    test_r2   = r2_score(y_test,    y_pred_test)
-    test_rmse = np.sqrt(mean_squared_error(y_test, y_pred_test))
-    test_mae  = mean_absolute_error(y_test, y_pred_test)
+    train_r2   = r2_score(y_train,   y_pred_train)
+    test_r2    = r2_score(y_test,    y_pred_test)
+    train_rmse = np.sqrt(mean_squared_error(y_train, y_pred_train))
+    test_rmse  = np.sqrt(mean_squared_error(y_test,  y_pred_test))
+    test_mae   = mean_absolute_error(y_test, y_pred_test)
 
     results[name] = {
-        "CV R² (mean)":  round(cv_r2,     4),
-        "CV R² (±std)":  round(cv_std,    4),
-        "Train R²":      round(train_r2,  4),
-        "Test R²":       round(test_r2,   4),
-        "Test RMSE":     round(test_rmse, 2),
-        "Test MAE":      round(test_mae,  2),
-        "Tune Time (s)": round(tune_time, 1),
-        "Train Time (s)":round(train_time,1),
+        "CV R² (mean)":  round(cv_r2,      4),
+        "CV R² (±std)":  round(cv_std,     4),
+        "Train R²":      round(train_r2,   4),
+        "Test R²":       round(test_r2,    4),
+        "Train RMSE":    round(train_rmse, 2),
+        "Test RMSE":     round(test_rmse,  2),
+        "Test MAE":      round(test_mae,   2),
+        "Tune Time (s)": round(tune_time,  1),
+        "Train Time (s)":round(train_time, 1),
         "Best Params":   best_p,
     }
 
@@ -292,7 +302,7 @@ fig.suptitle(
     fontsize=13, fontweight="bold"
 )
 
-colors = {"LightGBM": "#2196F3", "Random Forest": "#4CAF50", "Ridge": "#FF9800"}
+colors = {"LightGBM": "#2196F3", "Random Forest": "#4CAF50", "Ridge": "#FF9800", "XGBoost": "#9C27B0"}
 names  = list(results.keys())
 
 metric_specs = [
@@ -330,7 +340,7 @@ report_lines = [
     "Irish Home Retrofit — BER Rating Prediction: ML Pipeline",
     "=" * 65,
     f"Dataset       : {DATA_PATH}",
-    f"Total rows    : {len(df):,}  (after outlier trim)",
+    f"Total rows    : {len(df):,}",
     f"Train set     : {len(X_train):,} rows  (80%)",
     f"Test set      : {len(X_test):,}  rows  (20%, held-out)",
     f"Tuning subset : {TUNE_SAMPLE:,} rows  (stratified from train set)",
@@ -348,6 +358,7 @@ for name, res in results.items():
         f"  CV R²        : {res['CV R² (mean)']} ± {res['CV R² (±std)']}",
         f"  Train R²     : {res['Train R²']}",
         f"  Test R²      : {res['Test R²']}",
+        f"  Train RMSE   : {res['Train RMSE']} kWh/m²/yr",
         f"  Test RMSE    : {res['Test RMSE']} kWh/m²/yr",
         f"  Test MAE     : {res['Test MAE']} kWh/m²/yr",
         f"  Tune time    : {res['Tune Time (s)']}s",
