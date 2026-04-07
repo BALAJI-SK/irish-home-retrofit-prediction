@@ -1,0 +1,63 @@
+============================================================
+BER MODEL TRAINING REPORT
+============================================================
+Dataset rows:   1,350,432
+Features:       118
+Train rows:     945,302
+Val rows:       202,565
+Test rows:      202,565
+
+── LightGBM baseline ──
+  train  R²=0.9921  RMSE=13.47  MAE=7.05 kWh/m²/yr
+  val    R²=0.9905  RMSE=14.73  MAE=7.46 kWh/m²/yr
+  test   R²=0.9909  RMSE=14.40  MAE=7.43 kWh/m²/yr
+
+── LightGBM FINAL (tuned) ──
+  train  R²=0.9928  RMSE=12.86  MAE=6.77 kWh/m²/yr
+  val    R²=0.9926  RMSE=12.98  MAE=6.77 kWh/m²/yr
+  test   R²=0.9913  RMSE=14.11  MAE=7.26 kWh/m²/yr
+  Best params: {'subsample': 0.9, 'reg_lambda': 0.1, 'reg_alpha': 0.1, 'num_leaves': 127, 'n_estimators': 1500, 'min_child_samples': 100, 'max_depth': 8, 'learning_rate': 0.08, 'colsample_bytree': 0.8}
+
+── XGBoost baseline ──
+  train  R²=0.9892  RMSE=15.80  MAE=8.30 kWh/m²/yr
+  val    R²=0.9880  RMSE=16.56  MAE=8.50 kWh/m²/yr
+  test   R²=0.9884  RMSE=16.25  MAE=8.47 kWh/m²/yr
+
+── XGBoost FINAL (tuned) ──
+  train  R²=0.9891  RMSE=15.83  MAE=8.35 kWh/m²/yr
+  val    R²=0.9893  RMSE=15.60  MAE=8.32 kWh/m²/yr
+  test   R²=0.9885  RMSE=16.19  MAE=8.49 kWh/m²/yr
+  Best params: {'subsample': 0.7, 'reg_lambda': 2.0, 'reg_alpha': 0.0, 'n_estimators': 1000, 'min_child_weight': 5, 'max_depth': 6, 'learning_rate': 0.05, 'gamma': 0.0, 'colsample_bytree': 0.8}
+
+── TOP 30 FEATURES (LightGBM gain) ─────────────────────
+                  feature  importance
+   FirstEnerProdDelivered        8841
+   HSMainSystemEfficiency        8162
+      FabricHeatLossPerM2        7769
+          WHMainSystemEff        6290
+      FabricHeatLossProxy        4696
+             UValueWindow        4219
+     Year_of_Construction        4054
+               WindowArea        3929
+      GroundFloorAreasq_m        3462
+        LivingAreaPercent        3310
+        WindowToWallRatio        3255
+               CountyName        2943
+        GroundFloorHeight        2782
+                 RoofArea        2284
+                 WallArea        2151
+         HSSupplSystemEff        2058
+  TotalFloorArea_computed        1965
+FanPowerManuDeclaredValue        1928
+          GroundFloorArea        1893
+                 DoorArea        1887
+              UValueFloor        1860
+      ThermalMassCategory        1857
+            AvgWallUValue        1836
+    HeatSystemResponseCat        1828
+          PurposeOfRating        1734
+            FirstWallArea        1702
+               UvalueDoor        1682
+       WaterStorageVolume        1606
+                FloorArea        1598
+               UValueRoof        1590
