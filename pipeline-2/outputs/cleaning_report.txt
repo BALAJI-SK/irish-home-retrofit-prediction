@@ -1,0 +1,198 @@
+============================================================
+BER DATASET — CLEANING REPORT
+============================================================
+Original rows read   :    1,354,360
+Dropped (BerRating)  :        3,924  [outside 0.0–2000.0]
+Dropped (Year)       :            4  [outside 1700–2026]
+Clean rows written   :    1,350,432
+Retention rate       : 99.71%
+
+Columns in parquet   : 119
+
+── TARGET STATISTICS (BerRating) ──────────────────────
+  Mean   : 205.94 kWh/m²/yr
+  Median : 184.43 kWh/m²/yr
+  Std    : 151.63
+  Min    : 0.00
+  Max    : 1997.71
+  Pct A-B (≤100): 22.3%
+  Pct C  (101-200): 34.6%
+  Pct D  (201-300): 26.3%
+  Pct E+ (>300): 16.9%
+
+── NULL CHECK (post-cleaning) ────────────────────────
+  No nulls remaining. ✓
+
+── ENGINEERED FEATURES ───────────────────────────────
+  WindowToWallRatio                        mean=0.2995
+  FabricHeatLossProxy                      mean=176.1949
+  FabricHeatLossPerM2                      mean=1.5542
+  AvgWallUValue                            mean=0.6325
+  TotalFloorArea_computed                  mean=115.2959
+  AgeBand                                  values={'2000-2004': 226400, '2016+': 203592, '2005-2010': 151701, '1994-1999': 148662, '1967-1977': 133223, '1983-1993': 122427, 'Pre1900': 75649, '1950-1966': 73676, '1930-1949': 70632, '1978-1982': 69577, '1900-1929': 49782, '2011-2015': 25111}
+  IsHeatPump                               values={0: 1350432}
+  HasSolarWaterHeating                     values={0: 1316304, 1: 34128}
+  HasRoofInsulation                        values={0: 769383, 1: 581049}
+  HasWallInsulation                        values={0: 697295, 1: 653137}
+  HasDoubleGlazing                         values={0: 952289, 1: 398143}
+  has_hw_cylinder                          values={0: 689438, 1: 660994}
+
+── DWELLING TYPE DISTRIBUTION ────────────────────────
+  Detached house                     :  406,876 (30.1%)
+  Semi-detached house                :  359,454 (26.6%)
+  Mid-terrace house                  :  184,291 (13.6%)
+  Mid-floor apartment                :  102,926 (7.6%)
+  End of terrace house               :  102,800 (7.6%)
+  Top-floor apartment                :   74,320 (5.5%)
+  Ground-floor apartment             :   72,777 (5.4%)
+  House                              :   27,077 (2.0%)
+  Maisonette                         :   17,169 (1.3%)
+  Apartment                          :    2,242 (0.2%)
+  Basement Dwelling                  :      500 (0.0%)
+
+── HEATING FUEL DISTRIBUTION ─────────────────────────
+  Heating Oil                        :  474,854 (35.2%)
+  Mains Gas                          :  458,284 (33.9%)
+  Electricity                        :  351,846 (26.1%)
+  Solid Multi-Fuel                   :   33,220 (2.5%)
+  Bulk LPG (propane or butane)       :   16,225 (1.2%)
+  Manufactured Smokeless Fuel        :    7,461 (0.6%)
+  House Coal                         :    2,649 (0.2%)
+  Wood Pellets (bulk supply for      :    2,014 (0.1%)
+  Bottled LPG                        :    1,268 (0.1%)
+  Sod Peat                           :    1,147 (0.1%)
+
+── BUILDING AGE BAND DISTRIBUTION ───────────────────
+  1900-1929           :   49,782 (3.7%)
+  1930-1949           :   70,632 (5.2%)
+  1950-1966           :   73,676 (5.5%)
+  1967-1977           :  133,223 (9.9%)
+  1978-1982           :   69,577 (5.2%)
+  1983-1993           :  122,427 (9.1%)
+  1994-1999           :  148,662 (11.0%)
+  2000-2004           :  226,400 (16.8%)
+  2005-2010           :  151,701 (11.2%)
+  2011-2015           :   25,111 (1.9%)
+  2016+               :  203,592 (15.1%)
+  Pre1900             :   75,649 (5.6%)
+
+── COLUMN LIST ───────────────────────────────────────
+    1. AgeBand
+    2. AvgWallUValue
+    3. BerRating
+    4. CHBoilerThermostatControlled
+    5. ChargingBasisHeatConsumed
+    6. CombiBoiler
+    7. CombiBoilerAddLoss
+    8. CombinedCylinder
+    9. CountyName
+   10. CylinderStat
+   11. DeclaredLossFactor
+   12. DoorArea
+   13. DraftLobby
+   14. DwellingTypeDescr
+   15. ElecConsumpKeepHot
+   16. ElecImmersionInSummer
+   17. FabricHeatLossPerM2
+   18. FabricHeatLossProxy
+   19. FanPowerManuDeclaredValue
+   20. FirstEnerProdDelivered
+   21. FirstEnergyType_Description
+   22. FirstFloorArea
+   23. FirstFloorHeight
+   24. FirstWallAgeBandId
+   25. FirstWallArea
+   26. FirstWallIsSemiExposed
+   27. FirstWallType_Description
+   28. FirstWallUValue
+   29. FloorArea
+   30. GroundFloorArea
+   31. GroundFloorAreasq_m
+   32. GroundFloorHeight
+   33. GroundFloorUValue
+   34. HESSchemeUpgrade
+   35. HSEffAdjFactor
+   36. HSMainSystemEfficiency
+   37. HSSupplHeatFraction
+   38. HSSupplSystemEff
+   39. HasDoubleGlazing
+   40. HasRoofInsulation
+   41. HasSolarWaterHeating
+   42. HasWallInsulation
+   43. HeatExchangerEff
+   44. HeatSystemControlCat
+   45. HeatSystemResponseCat
+   46. InsulationThickness
+   47. InsulationType
+   48. IsHeatPump
+   49. KeepHotFacility
+   50. LivingAreaPercent
+   51. LowEnergyLightingPercent
+   52. MainSpaceHeatingFuel
+   53. MainWaterHeatingFuel
+   54. ManuLossFactorAvail
+   55. MultiDwellingMPRN
+   56. NoCentralHeatingPumps
+   57. NoGasBoilerHeatingPumps
+   58. NoOfChimneys
+   59. NoOfFansAndVents
+   60. NoOfFluelessGasFires
+   61. NoOfOpenFlues
+   62. NoOfSidesSheltered
+   63. NoOilBoilerHeatingPumps
+   64. NoStoreys
+   65. OBBoilerThermostatControlled
+   66. OBPumpInsideDwelling
+   67. PercentageDraughtStripped
+   68. PermeabilityTest
+   69. PermeabilityTestResult
+   70. PredominantRoofType
+   71. PredominantRoofTypeArea
+   72. PrimaryCircuitLoss
+   73. PurposeOfRating
+   74. RoofArea
+   75. RoomInRoofArea
+   76. SHRenewableResources
+   77. SWHPumpSolarPowered
+   78. SecondEnerProdDelivered
+   79. SecondEnergyType_Description
+   80. SecondFloorArea
+   81. SecondFloorHeight
+   82. SecondWallAgeBandId
+   83. SecondWallArea
+   84. SecondWallIsSemiExposed
+   85. SecondWallType_Description
+   86. SecondWallUValue
+   87. SolarHotWaterHeating
+   88. StorageLosses
+   89. StructureType
+   90. SupplSHFuel
+   91. SupplWHFuel
+   92. SuspendedWoodenFloor
+   93. TGDLEdition
+   94. TempAdjustment
+   95. TempFactorMultiplier
+   96. TempFactorUnadj
+   97. ThermalBridgingFactor
+   98. ThermalMassCategory
+   99. ThirdFloorArea
+  100. ThirdFloorHeight
+  101. TotalFloorArea_computed
+  102. TypeofRating
+  103. UValueFloor
+  104. UValueRoof
+  105. UValueWall
+  106. UValueWindow
+  107. UndergroundHeating
+  108. UvalueDoor
+  109. VentilationMethod
+  110. WHEffAdjFactor
+  111. WHMainSystemEff
+  112. WHRenewableResources
+  113. WallArea
+  114. WarmAirHeatingSystem
+  115. WaterStorageVolume
+  116. WindowArea
+  117. WindowToWallRatio
+  118. Year_of_Construction
+  119. has_hw_cylinder

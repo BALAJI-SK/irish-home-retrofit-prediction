@@ -1,0 +1,57 @@
+============================================================
+RETROFIT INTERVENTION — AGGREGATE SUMMARY
+Sample size: 2,000 dwellings
+============================================================
+
+Baseline BER: mean=199.4, median=175.7 kWh/m²/yr
+
+  A_RoofInsulation       | New BER:  186.5 | Saving:   12.9 kWh/m²/yr (  3.9%) | Median saving:    1.9
+  B_WallInsulation       | New BER:  167.6 | Saving:   31.8 kWh/m²/yr ( 10.9%) | Median saving:   14.4
+  C_WindowUpgrade        | New BER:  186.1 | Saving:   13.2 kWh/m²/yr (  5.2%) | Median saving:    9.4
+  D_HeatPump             | New BER:  133.3 | Saving:   66.0 kWh/m²/yr ( 27.2%) | Median saving:   52.2
+  E_SolarWaterHeating    | New BER:  195.0 | Saving:    4.3 kWh/m²/yr (  1.9%) | Median saving:    2.5
+  F_Airtightness         | New BER:  198.9 | Saving:    0.4 kWh/m²/yr ( -0.0%) | Median saving:    0.0
+  G_LEDLighting          | New BER:  198.0 | Saving:    1.3 kWh/m²/yr (  0.1%) | Median saving:    0.6
+  H_DeepRetrofit         | New BER:   82.9 | Saving:  116.5 kWh/m²/yr ( 44.7%) | Median saving:   89.7
+
+── BY DWELLING TYPE (Deep Retrofit H) ─────────────────
+                         mean  median  count
+DwellingType                                
+Apartment               221.0   290.8      3
+Top-floor apartment     141.5   111.3    103
+Mid-terrace house       140.8   102.6    285
+House                   131.5    93.9     43
+Detached house          127.9    88.7    624
+End of terrace house    105.8    80.6    149
+Ground-floor apartment  103.7    91.2    104
+Semi-detached house     100.3    87.4    511
+Maisonette               80.9    68.5     22
+Mid-floor apartment      80.3    75.7    156
+
+── BY AGE BAND (Deep Retrofit H) ──────────────────────
+            mean  median  count
+AgeBand                        
+1900-1929  299.8   205.8     82
+Pre1900    278.5   218.7    112
+1930-1949  214.8   176.7     99
+1950-1966  172.7   165.1     89
+1967-1977  156.7   142.0    199
+1983-1993  123.4   108.6    171
+1978-1982  120.8   109.2     93
+1994-1999  112.2   105.3    207
+2000-2004  102.3    91.4    344
+2005-2010   77.7    70.2    227
+2011-2015   15.8    10.5     37
+2016+        1.0    -2.9    340
+
+── SINGLE DWELLING EXAMPLE ────────────────────────────
+Dwelling: End of terrace house, 2008, Co. Tipperary
+Baseline BER: 162.0 kWh/m²/yr
+  A_RoofInsulation       →   160.3  (saving:    +1.7 kWh/m²/yr)
+  B_WallInsulation       →   146.0  (saving:   +16.0 kWh/m²/yr)
+  C_WindowUpgrade        →   163.4  (saving:    -1.5 kWh/m²/yr)
+  D_HeatPump             →   126.0  (saving:   +36.0 kWh/m²/yr)
+  E_SolarWaterHeating    →   155.8  (saving:    +6.2 kWh/m²/yr)
+  F_Airtightness         →   161.6  (saving:    +0.4 kWh/m²/yr)
+  G_LEDLighting          →   159.8  (saving:    +2.2 kWh/m²/yr)
+  H_DeepRetrofit         →    94.0  (saving:   +67.9 kWh/m²/yr)
