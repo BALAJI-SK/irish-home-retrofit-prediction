@@ -1,0 +1,66 @@
+=================================================================
+Irish Home Retrofit — BER Rating Prediction: ML Pipeline
+=================================================================
+Dataset       : 46_Col_final_with_county.parquet
+Total rows    : 1,351,582
+Train set     : 1,081,265 rows  (80%)
+Test set      : 270,317  rows  (20%, held-out)
+Tuning subset : 200,000 rows  (stratified from train set)
+CV            : 5-fold KFold
+Tuning        : RandomizedSearchCV  (20 iterations)
+Target        : BerRating  (kWh/m²/yr)
+
+-----------------------------------------------------------------
+RESULTS
+-----------------------------------------------------------------
+
+Ridge
+  CV R²        : 0.7238 ± 0.092
+  Train R²     : 0.7129
+  Test R²      : 0.7795
+  Train RMSE   : 87.26 kWh/m²/yr
+  Test RMSE    : 73.06 kWh/m²/yr
+  Test MAE     : 41.23 kWh/m²/yr
+  Tune time    : 12.0s
+  Train time   : 4.0s
+  Best Params  : {'model__alpha': np.float64(47.14866363457394)}
+
+Random Forest
+  CV R²        : 0.8489 ± 0.1052
+  Train R²     : 0.9816
+  Test R²      : 0.9404
+  Train RMSE   : 22.1 kWh/m²/yr
+  Test RMSE    : 37.97 kWh/m²/yr
+  Test MAE     : 17.96 kWh/m²/yr
+  Tune time    : 932.5s
+  Train time   : 293.0s
+  Best Params  : {'model__n_estimators': 300, 'model__min_samples_split': 5, 'model__min_samples_leaf': 1, 'model__max_features': 0.5, 'model__max_depth': 35}
+
+LightGBM
+  CV R²        : 0.8667 ± 0.1062
+  Train R²     : 0.967
+  Test R²      : 0.9361
+  Train RMSE   : 29.59 kWh/m²/yr
+  Test RMSE    : 39.32 kWh/m²/yr
+  Test MAE     : 16.55 kWh/m²/yr
+  Tune time    : 291.0s
+  Train time   : 15.0s
+  Best Params  : {'model__subsample': 0.7, 'model__reg_lambda': 0.1, 'model__reg_alpha': 0.5, 'model__num_leaves': 31, 'model__n_estimators': 800, 'model__min_child_samples': 10, 'model__max_depth': 6, 'model__learning_rate': 0.08, 'model__colsample_bytree': 1.0}
+
+XGBoost
+  CV R²        : 0.8638 ± 0.1035
+  Train R²     : 0.979
+  Test R²      : 0.9252
+  Train RMSE   : 23.58 kWh/m²/yr
+  Test RMSE    : 42.55 kWh/m²/yr
+  Test MAE     : 15.26 kWh/m²/yr
+  Tune time    : 150.3s
+  Train time   : 26.5s
+  Best Params  : {'model__subsample': 1.0, 'model__reg_lambda': 1.0, 'model__reg_alpha': 0.5, 'model__n_estimators': 800, 'model__min_child_weight': 5, 'model__max_depth': 8, 'model__learning_rate': 0.05, 'model__colsample_bytree': 0.7}
+
+=================================================================
+BEST MODEL: Random Forest
+  Test R²   = 0.9404
+  Test RMSE = 37.97
+  Test MAE  = 17.96
+=================================================================
