@@ -26,8 +26,11 @@ Output (in outputs/scenario_reports/):
 
 import json
 import pickle
+import sys
 import warnings
 from pathlib import Path
+
+from cli_logger import setup_script_logging
 
 import matplotlib
 matplotlib.use('Agg')
@@ -44,12 +47,13 @@ warnings.filterwarnings('ignore')
 BASE_DIR      = Path(__file__).parent.parent
 OUTPUT_DIR    = BASE_DIR / "outputs"
 REPORT_DIR    = OUTPUT_DIR / "scenario_reports"
+OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+REPORT_DIR.mkdir(parents=True, exist_ok=True)
+setup_script_logging(OUTPUT_DIR / f"{Path(__file__).stem}.log")
 CONFIG_DIR    = BASE_DIR / "config"
 PARQUET_PATH  = OUTPUT_DIR / "clean_data_55col.parquet"
 LGBM_PATH     = OUTPUT_DIR / "lgbm_model.pkl"
 MEASURES_PATH = CONFIG_DIR / "retrofit_measures.json"
-
-REPORT_DIR.mkdir(parents=True, exist_ok=True)
 
 # Number of example dwellings to explain per measure
 N_EXAMPLES  = 3

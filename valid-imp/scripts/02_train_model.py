@@ -11,9 +11,9 @@ Models trained:
 Strategy:
   - Load clean_data_55col.parquet (produced by 01_clean_and_prepare.py)
   - 70/15/15 train/val/test split
-  - 5-fold CV on 200K subsample (full 1.35M CV is impractical)
+  - 5-fold CV on the full training dataset
   - Target: log1p(BerRating) to handle right skew
-  - Global SHAP on 10K sample — verify FabricHeatLossPerM2 is top-3
+  - Global SHAP on a 10K sample for visualization
   - Metrics on original kWh/m²/yr scale
 
 Output:
@@ -25,12 +25,15 @@ Output:
   outputs/model_report.txt        — full metrics + CV results
 """
 
+import sys
 import pandas as pd
 import numpy as np
 import pickle
 import time
 import warnings
 from pathlib import Path
+
+from cli_logger import setup_script_logging
 
 from sklearn.model_selection import train_test_split, cross_val_score, KFold
 from sklearn.preprocessing import OrdinalEncoder
@@ -53,6 +56,8 @@ warnings.filterwarnings('ignore')
 # CONFIGURATION
 # ─────────────────────────────────────────────────────────────
 OUTPUT_DIR   = Path(__file__).parent.parent / "outputs"
+OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+setup_script_logging(OUTPUT_DIR / f"{Path(__file__).stem}.log")
 PARQUET_PATH = OUTPUT_DIR / "clean_data_55col.parquet"
 LGBM_PATH    = OUTPUT_DIR / "lgbm_model.pkl"
 REPORT_PATH  = OUTPUT_DIR / "model_report.txt"
@@ -60,8 +65,8 @@ FIMP_PATH    = OUTPUT_DIR / "feature_importance.csv"
 
 TARGET      = 'BerRating'
 RANDOM_SEED = 42
-SHAP_N      = 10_000   # global SHAP sample size
-CV_N        = 200_000  # 5-fold CV subsample size
+SHAP_N      = 10_000   # global SHAP sample size (for visualization)
+CV_N        = None     # use full training set for cross-validation
 
 # LightGBM hyperparameters validated in 118-col pipeline
 LGBM_PARAMS = {
@@ -177,15 +182,12 @@ def evaluate(model, X_tr, y_tr_raw, X_vl, y_vl_raw, X_te, y_te_raw,
 
 
 # ─────────────────────────────────────────────────────────────
-# 5-FOLD CROSS-VALIDATION (200K subsample)
+# 5-FOLD CROSS-VALIDATION (full training set)
 # ─────────────────────────────────────────────────────────────
 def run_cv(model_class, model_kwargs: dict, X_data, y_data, model_name: str) -> dict:
-    """Run 5-fold CV on a 200K subsample. Returns mean/std R²."""
-    rng = np.random.default_rng(RANDOM_SEED)
-    n = min(CV_N, len(X_data))
-    idx = rng.choice(len(X_data), size=n, replace=False)
-    X_cv = X_data.iloc[idx]
-    y_cv = y_data[idx]
+    """Run 5-fold CV on the full training set. Returns mean/std R²."""
+    X_cv = X_data
+    y_cv = y_data
 
     kf = KFold(n_splits=5, shuffle=True, random_state=RANDOM_SEED)
     scores = []
@@ -206,18 +208,15 @@ def run_cv(model_class, model_kwargs: dict, X_data, y_data, model_name: str) -> 
 
 
 # ─────────────────────────────────────────────────────────────
-# 5-fold CV for LightGBM on 200K subsample
+# 5-fold CV for LightGBM on the full training set
 # ─────────────────────────────────────────────────────────────
 print("\n" + "=" * 60)
-print("5-FOLD CROSS-VALIDATION (LightGBM, 200K subsample)")
+print("5-FOLD CROSS-VALIDATION (LightGBM, full training set)")
 print("=" * 60)
 
-rng_cv = np.random.default_rng(RANDOM_SEED)
-cv_n   = min(CV_N, len(X_train))
-cv_idx = rng_cv.choice(len(X_train), size=cv_n, replace=False)
-X_cv   = X_train.iloc[cv_idx]
-y_cv   = y_train[cv_idx]
-yraw_cv = yraw_train[cv_idx]
+X_cv    = X_train
+y_cv    = y_train
+yraw_cv = yraw_train
 
 kf = KFold(n_splits=5, shuffle=True, random_state=RANDOM_SEED)
 cv_scores = []
@@ -280,18 +279,15 @@ print(f"\nLightGBM saved to {LGBM_PATH}")
 
 
 # ─────────────────────────────────────────────────────────────
-# RANDOM FOREST — COMPARISON MODEL (200K subsample for speed)
+# RANDOM FOREST — COMPARISON MODEL (full training set)
 # ─────────────────────────────────────────────────────────────
 print("\n" + "=" * 60)
-print("RANDOM FOREST — Comparison model (200K subsample)")
+print("RANDOM FOREST — Comparison model (full training set)")
 print("=" * 60)
 
-rf_n = min(200_000, len(X_train))
-rng_rf = np.random.default_rng(RANDOM_SEED + 1)
-rf_idx = rng_rf.choice(len(X_train), size=rf_n, replace=False)
-X_rf_train = X_train.iloc[rf_idx]
-y_rf_train = y_train[rf_idx]
-yraw_rf_train = yraw_train[rf_idx]
+X_rf_train = X_train
+y_rf_train = y_train
+yraw_rf_train = yraw_train
 
 rf_model = RandomForestRegressor(
     n_estimators=300,
@@ -316,7 +312,7 @@ rf_results = evaluate(
 # RIDGE REGRESSION — BASELINE MODEL
 # ─────────────────────────────────────────────────────────────
 print("\n" + "=" * 60)
-print("RIDGE REGRESSION — Baseline model (200K subsample)")
+print("RIDGE REGRESSION — Baseline model (full training set)")
 print("=" * 60)
 
 ridge_pipeline = Pipeline([
@@ -456,7 +452,7 @@ report_lines.append("  TempAdjustment, TempFactorMultiplier.")
 report_lines.append("  Expected R2 drop: 0.9913 -> ~0.93-0.96 (honest estimate).")
 report_lines.append("")
 
-report_lines.append("-- 5-FOLD CV (LightGBM, 200K subsample) --")
+report_lines.append("-- 5-FOLD CV (LightGBM, full training set) --")
 report_lines.append(f"  mean R2 = {lgbm_cv_mean:.4f} +/- {lgbm_cv_std:.4f}")
 report_lines.append(f"  fold scores: {[f'{s:.4f}' for s in cv_scores]}")
 report_lines.append("")
@@ -464,7 +460,7 @@ report_lines.append("")
 report_lines += fmt_results("LightGBM (validated hyperparams)", lgbm_results)
 report_lines.append(f"  Params: {LGBM_PARAMS}")
 report_lines.append("")
-report_lines += fmt_results("Random Forest (200K subsample)", rf_results)
+report_lines += fmt_results("Random Forest (full training set)", rf_results)
 report_lines.append("")
 report_lines += fmt_results("Ridge Regression (baseline)", ridge_results)
 report_lines.append("")

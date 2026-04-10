@@ -18,15 +18,18 @@ Validated retrofit measures (from pipeline-2/reports/05_results.md):
   H. Deep Retrofit      -117 kWh/m2/yr (-45%)
 
 Output:
-  outputs/retrofit_results.csv     — per-dwelling results (2K sample)
+  outputs/retrofit_results.csv     — per-dwelling results (full dataset)
   outputs/retrofit_bar.png         — mean saving per measure bar chart
   outputs/retrofit_summary.txt     — aggregate statistics by age/type
 """
 
 import json
 import pickle
+import sys
 import warnings
 from pathlib import Path
+
+from cli_logger import setup_script_logging
 
 import matplotlib
 matplotlib.use('Agg')
@@ -41,12 +44,14 @@ warnings.filterwarnings('ignore')
 # ─────────────────────────────────────────────────────────────
 BASE_DIR     = Path(__file__).parent.parent
 OUTPUT_DIR   = BASE_DIR / "outputs"
+OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+setup_script_logging(OUTPUT_DIR / f"{Path(__file__).stem}.log")
 CONFIG_DIR   = BASE_DIR / "config"
 PARQUET_PATH = OUTPUT_DIR / "clean_data_55col.parquet"
 LGBM_PATH    = OUTPUT_DIR / "lgbm_model.pkl"
 MEASURES_PATH = CONFIG_DIR / "retrofit_measures.json"
 
-RETROFIT_N  = 2_000
+RETROFIT_N  = None   # use full dataset for retrofit simulation
 RANDOM_SEED = 42
 TARGET      = 'BerRating'
 
@@ -272,15 +277,13 @@ def apply_scenario_df(df_input: pd.DataFrame, overrides: dict,
 
 
 # ─────────────────────────────────────────────────────────────
-# SIMULATION: 2K-HOME SAMPLE × 8 MEASURES
+# SIMULATION: full dataset × all measures
 # ─────────────────────────────────────────────────────────────
 print("\n" + "=" * 60)
-print(f"RETROFIT SIMULATION ({RETROFIT_N:,} homes x {len(MEASURES)} measures)")
+print(f"RETROFIT SIMULATION (full dataset x {len(MEASURES)} measures)")
 print("=" * 60)
 
-rng     = np.random.default_rng(RANDOM_SEED)
-idx_ret = rng.choice(len(df), size=min(RETROFIT_N, len(df)), replace=False)
-df_ret  = df.iloc[idx_ret].copy().reset_index(drop=True)
+df_ret = df.copy().reset_index(drop=True)
 
 # Baseline
 X_base   = prepare_X(df_ret)
@@ -301,7 +304,7 @@ if 'AgeBand' in df_ret.columns:
 summary_lines = []
 summary_lines.append("=" * 60)
 summary_lines.append("RETROFIT INTERVENTION — AGGREGATE SUMMARY")
-summary_lines.append(f"Sample size: {RETROFIT_N:,} dwellings")
+summary_lines.append(f"Sample size: {len(df_ret):,} dwellings")
 summary_lines.append(f"Baseline BER: mean={ber_base.mean():.1f}, "
                      f"median={np.median(ber_base):.1f} kWh/m2/yr")
 summary_lines.append("=" * 60)

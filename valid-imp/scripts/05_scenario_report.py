@@ -22,8 +22,11 @@ Output:
 """
 
 import json
+import sys
 import warnings
 from pathlib import Path
+
+from cli_logger import setup_script_logging
 
 import numpy as np
 import pandas as pd
@@ -36,8 +39,10 @@ warnings.filterwarnings('ignore')
 BASE_DIR    = Path(__file__).parent.parent
 OUTPUT_DIR  = BASE_DIR / "outputs"
 REPORT_DIR  = OUTPUT_DIR / "scenario_reports"
-CONFIG_DIR  = BASE_DIR / "config"
+OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 REPORT_DIR.mkdir(parents=True, exist_ok=True)
+setup_script_logging(OUTPUT_DIR / f"{Path(__file__).stem}.log")
+CONFIG_DIR  = BASE_DIR / "config"
 
 MEASURES_PATH = CONFIG_DIR / "retrofit_measures.json"
 

@@ -34,9 +34,12 @@ Output:
   outputs/cleaning_report.txt
 """
 
+import sys
 import warnings
 import time
 from pathlib import Path
+
+from cli_logger import setup_script_logging
 
 import numpy as np
 import pandas as pd
@@ -52,7 +55,8 @@ PARQUET_IN  = Path('/Users/akarsh/Downloads/Col Final with County.parquet')
 CSV_IN      = Path('/Users/akarsh/Downloads/Public Search Data.csv')
 
 OUTPUT_DIR  = Path(__file__).parent.parent / 'outputs'
-OUTPUT_DIR.mkdir(exist_ok=True)
+OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+setup_script_logging(OUTPUT_DIR / f"{Path(__file__).stem}.log")
 PARQUET_OUT = OUTPUT_DIR / 'clean_data_55col.parquet'
 REPORT_PATH = OUTPUT_DIR / 'cleaning_report.txt'
 
