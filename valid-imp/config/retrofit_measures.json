@@ -1,0 +1,95 @@
+{
+  "heat_pump": {
+    "name": "Heat Pump Installation",
+    "label": "A_HeatPump",
+    "description": "Replace oil/gas boiler with air source heat pump (COP=3.5)",
+    "overrides": {
+      "MainSpaceHeatingFuel": "Electricity - Heat Pump",
+      "IsHeatPump": 1,
+      "HSMainSystemEfficiency": 350,
+      "MainWaterHeatingFuel": "Electricity - Heat Pump",
+      "WHMainSystemEff": 350
+    },
+    "recompute_derived": false
+  },
+  "wall_insulation": {
+    "name": "Wall Insulation",
+    "label": "B_WallInsulation",
+    "description": "External wall insulation to TGD L 2021 standard (U=0.21 W/m²K)",
+    "overrides": {
+      "UValueWall": 0.21,
+      "FirstWallUValue": 0.21,
+      "HasWallInsulation": 1
+    },
+    "recompute_derived": true
+  },
+  "roof_insulation": {
+    "name": "Roof Insulation",
+    "label": "C_RoofInsulation",
+    "description": "Attic insulation to TGD L 2021 standard (U=0.16 W/m²K)",
+    "overrides": {
+      "UValueRoof": 0.16,
+      "HasRoofInsulation": 1
+    },
+    "recompute_derived": true
+  },
+  "window_upgrade": {
+    "name": "Window Upgrade",
+    "label": "D_WindowUpgrade",
+    "description": "Triple glazing upgrade to TGD L 2021 standard (U=1.40 W/m²K)",
+    "overrides": {
+      "UValueWindow": 1.40,
+      "HasDoubleGlazing": 1
+    },
+    "recompute_derived": true
+  },
+  "floor_insulation": {
+    "name": "Floor Insulation",
+    "label": "E_FloorInsulation",
+    "description": "Floor insulation to TGD L 2021 standard (U=0.15 W/m²K)",
+    "overrides": {
+      "UValueFloor": 0.15
+    },
+    "recompute_derived": true
+  },
+  "solar_water_heating": {
+    "name": "Solar Water Heating",
+    "label": "F_SolarWaterHeating",
+    "description": "Solar thermal panel for domestic hot water",
+    "overrides": {
+      "SolarHotWaterHeating": "YES",
+      "HasSolarWaterHeating": 1
+    },
+    "recompute_derived": false
+  },
+  "led_lighting": {
+    "name": "LED Lighting Upgrade",
+    "label": "G_LEDLighting",
+    "description": "100% LED low-energy lighting",
+    "overrides": {
+      "LowEnergyLightingPercent": 100
+    },
+    "recompute_derived": false
+  },
+  "deep_retrofit": {
+    "name": "Deep Retrofit Package",
+    "label": "H_DeepRetrofit",
+    "description": "Full package: heat pump + wall + roof + window insulation + LED (A+B+C+D+G)",
+    "overrides": {
+      "MainSpaceHeatingFuel": "Electricity - Heat Pump",
+      "IsHeatPump": 1,
+      "HSMainSystemEfficiency": 350,
+      "MainWaterHeatingFuel": "Electricity - Heat Pump",
+      "WHMainSystemEff": 350,
+      "UValueWall": 0.21,
+      "FirstWallUValue": 0.21,
+      "HasWallInsulation": 1,
+      "UValueRoof": 0.16,
+      "HasRoofInsulation": 1,
+      "UValueWindow": 1.40,
+      "HasDoubleGlazing": 1,
+      "LowEnergyLightingPercent": 100
+    },
+    "recompute_derived": true
+  }
+}
