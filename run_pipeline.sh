@@ -7,7 +7,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-IMP_DIR="$SCRIPT_DIR/valid-imp"
+IMP_DIR="$SCRIPT_DIR/final-implementation"
 PYTHON="$IMP_DIR/venv/bin/python"
 SCRIPTS_DIR="$IMP_DIR/scripts"
 
