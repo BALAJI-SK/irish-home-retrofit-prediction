@@ -1,12 +1,14 @@
 """
 02_train_model.py
 =================
-Model training on the honest 55-column dataset for BER rating prediction.
+Model training on the honest dataset for BER rating prediction
+AND retrofit classification for equity analysis.
 
 Models trained:
-  1. LightGBM  — primary model (hyperparameters from 118-col pipeline validation)
-  2. Random Forest — comparison
-  3. Ridge Regression — baseline
+  1. LightGBM Regressor  — primary BER predictor
+  2. LightGBM Classifier — predicts is_retrofitted (for equity targeting)
+  3. Random Forest       — comparison regressor
+  4. Ridge Regression    — baseline regressor
 
 Strategy:
   - Load clean_data_55col.parquet (produced by 01_clean_and_prepare.py)
@@ -17,11 +19,16 @@ Strategy:
   - Metrics on original kWh/m²/yr scale
 
 Output:
-  outputs/lgbm_model.pkl          — trained LightGBM + encoders + metadata
-  outputs/feature_importance.csv  — gain-based importance
-  outputs/shap_values_global.csv  — global SHAP on 10K sample
+  outputs/lgbm_model.pkl          — trained LightGBM regressor + encoders + metadata
+  outputs/lgbm_classifier.pkl     — trained LightGBM classifier (is_retrofitted)
+  outputs/classifier_report.txt   — classification metrics + ROC AUC
+  outputs/roc_curve.png           — ROC curve for classifier
+  outputs/pr_curve.png            — Precision-Recall curve for classifier
+  outputs/shap_summary_classifier.png — SHAP beeswarm for classifier
+  outputs/feature_importance.csv  — gain-based importance (regressor)
+  outputs/shap_values_global.csv  — global SHAP on 10K sample (regressor)
   outputs/shap_bar.png            — top-30 SHAP bar chart
-  outputs/shap_summary.png        — SHAP beeswarm
+  outputs/shap_summary.png        — SHAP beeswarm (regressor)
   outputs/model_report.txt        — full metrics + CV results
 """
 
@@ -37,7 +44,11 @@ from cli_logger import setup_script_logging
 
 from sklearn.model_selection import train_test_split, cross_val_score, KFold
 from sklearn.preprocessing import OrdinalEncoder
-from sklearn.metrics import r2_score, mean_squared_error, mean_absolute_error
+from sklearn.metrics import (
+    r2_score, mean_squared_error, mean_absolute_error,
+    roc_auc_score, average_precision_score,
+    classification_report, roc_curve, precision_recall_curve,
+)
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.linear_model import Ridge
 from sklearn.pipeline import Pipeline
@@ -58,15 +69,31 @@ warnings.filterwarnings('ignore')
 OUTPUT_DIR   = Path(__file__).parent.parent / "outputs"
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 setup_script_logging(OUTPUT_DIR / f"{Path(__file__).stem}.log")
-PARQUET_PATH = OUTPUT_DIR / "clean_data_55col.parquet"
-LGBM_PATH    = OUTPUT_DIR / "lgbm_model.pkl"
-REPORT_PATH  = OUTPUT_DIR / "model_report.txt"
-FIMP_PATH    = OUTPUT_DIR / "feature_importance.csv"
+PARQUET_PATH  = OUTPUT_DIR / "clean_data_55col.parquet"
+LGBM_PATH     = OUTPUT_DIR / "lgbm_model.pkl"
+CLF_PATH      = OUTPUT_DIR / "lgbm_classifier.pkl"
+REPORT_PATH   = OUTPUT_DIR / "model_report.txt"
+CLF_RPT_PATH  = OUTPUT_DIR / "classifier_report.txt"
+FIMP_PATH     = OUTPUT_DIR / "feature_importance.csv"
 
 TARGET      = 'BerRating'
+CLF_TARGET  = 'is_retrofitted'   # binary classification target
 RANDOM_SEED = 42
 SHAP_N      = 10_000   # global SHAP sample size (for visualization)
 CV_N        = None     # use full training set for cross-validation
+
+# Columns excluded from model features (geographic IDs + policy/derived cols)
+NON_FEATURE_COLS = [
+    TARGET,
+    CLF_TARGET,
+    'CountyName',
+    'EstCO2_kg_per_m2',        # derived from BerRating — leaky for regressor
+    'Total_Annual_CO2_Tonnes', # derived from BerRating — leaky for regressor
+    'wall_insulated',          # redundant with HasWallInsulation
+    'roof_insulated',          # redundant with HasRoofInsulation
+    'heating_upgraded',        # derived flag (component of is_retrofitted)
+    'fuel_poverty_risk',       # derived from BerRating — leaky for regressor
+]
 
 # LightGBM hyperparameters validated in 118-col pipeline
 LGBM_PARAMS = {
@@ -101,7 +128,17 @@ print(f"Loaded {df.shape[0]:,} rows x {df.shape[1]} columns in "
 # FEATURE / TARGET SPLIT
 # ─────────────────────────────────────────────────────────────
 y_raw = df[TARGET].values.astype(np.float64)
-X     = df.drop(columns=[TARGET])
+
+# Extract classifier target before dropping non-feature cols
+y_clf = None
+if CLF_TARGET in df.columns:
+    y_clf = df[CLF_TARGET].values.astype(np.int32)
+    print(f"Classifier target '{CLF_TARGET}': "
+          f"{y_clf.sum():,} positive ({y_clf.mean()*100:.1f}%)")
+
+# Drop all non-feature columns
+drop_cols = [c for c in NON_FEATURE_COLS if c in df.columns]
+X = df.drop(columns=drop_cols)
 
 print(f"\nTarget (BerRating) — mean: {y_raw.mean():.1f}, "
       f"std: {y_raw.std():.1f}, min: {y_raw.min():.1f}, max: {y_raw.max():.1f}")
@@ -279,6 +316,159 @@ print(f"\nLightGBM saved to {LGBM_PATH}")
 
 
 # ─────────────────────────────────────────────────────────────
+# LIGHTGBM CLASSIFIER — is_retrofitted binary classification
+# ─────────────────────────────────────────────────────────────
+if y_clf is not None:
+    print("\n" + "=" * 60)
+    print("LIGHTGBM CLASSIFIER — is_retrofitted")
+    print("=" * 60)
+
+    # Re-use the same train/val/test indices from the regressor split
+    X_clf_tr, X_clf_te, y_clf_tr, y_clf_te = train_test_split(
+        X, y_clf, test_size=0.15, random_state=RANDOM_SEED
+    )
+    X_clf_tr, X_clf_val, y_clf_tr, y_clf_val = train_test_split(
+        X_clf_tr, y_clf_tr, test_size=0.15/0.85, random_state=RANDOM_SEED
+    )
+    print(f"  Classifier split — Train: {len(X_clf_tr):,}  "
+          f"Val: {len(X_clf_val):,}  Test: {len(X_clf_te):,}")
+
+    CLF_PARAMS = {
+        "n_estimators":      800,
+        "learning_rate":     0.08,
+        "num_leaves":        63,
+        "max_depth":         7,
+        "min_child_samples": 100,
+        "subsample":         0.85,
+        "colsample_bytree":  0.8,
+        "reg_alpha":         0.1,
+        "reg_lambda":        0.1,
+        "scale_pos_weight":  (y_clf_tr == 0).sum() / max((y_clf_tr == 1).sum(), 1),
+        "random_state":      RANDOM_SEED,
+        "n_jobs":            -1,
+        "verbose":           -1,
+    }
+
+    X_clf_tv = pd.concat([X_clf_tr, X_clf_val], ignore_index=True)
+    y_clf_tv = np.concatenate([y_clf_tr, y_clf_val])
+
+    clf_model = lgb.LGBMClassifier(**CLF_PARAMS)
+    clf_model.fit(
+        X_clf_tv, y_clf_tv,
+        eval_set=[(X_clf_val, y_clf_val)],
+        callbacks=[lgb.early_stopping(50, verbose=False),
+                   lgb.log_evaluation(period=-1)],
+    )
+
+    # Metrics on test set
+    y_prob_te  = clf_model.predict_proba(X_clf_te)[:, 1]
+    y_pred_te  = clf_model.predict(X_clf_te)
+    roc_auc    = roc_auc_score(y_clf_te, y_prob_te)
+    avg_prec   = average_precision_score(y_clf_te, y_prob_te)
+    clf_report = classification_report(y_clf_te, y_pred_te,
+                                        target_names=['Not Retrofitted', 'Retrofitted'])
+    print(f"\n  Test ROC-AUC  : {roc_auc:.4f}")
+    print(f"  Test Avg-Prec : {avg_prec:.4f}")
+    print(clf_report)
+
+    # ROC curve
+    fpr, tpr, _ = roc_curve(y_clf_te, y_prob_te)
+    fig, ax = plt.subplots(figsize=(7, 6))
+    ax.plot(fpr, tpr, color='#1565c0', lw=2,
+            label=f'LightGBM ROC (AUC = {roc_auc:.3f})')
+    ax.plot([0, 1], [0, 1], 'k--', lw=1)
+    ax.set_xlabel('False Positive Rate', fontsize=12)
+    ax.set_ylabel('True Positive Rate', fontsize=12)
+    ax.set_title('ROC Curve — Retrofit Classifier (is_retrofitted)', fontsize=13)
+    ax.legend(loc='lower right', fontsize=11)
+    ax.grid(True, alpha=0.3)
+    plt.tight_layout()
+    plt.savefig(OUTPUT_DIR / "roc_curve.png", dpi=150, bbox_inches='tight')
+    plt.close()
+    print(f"  ROC curve saved to {OUTPUT_DIR / 'roc_curve.png'}")
+
+    # Precision-Recall curve
+    prec, rec, _ = precision_recall_curve(y_clf_te, y_prob_te)
+    fig, ax = plt.subplots(figsize=(7, 6))
+    ax.plot(rec, prec, color='#c62828', lw=2,
+            label=f'LightGBM PR (Avg Prec = {avg_prec:.3f})')
+    ax.axhline(y_clf_te.mean(), color='#555555', linestyle='--',
+               lw=1, label=f'Baseline ({y_clf_te.mean():.3f})')
+    ax.set_xlabel('Recall', fontsize=12)
+    ax.set_ylabel('Precision', fontsize=12)
+    ax.set_title('Precision-Recall Curve — Retrofit Classifier', fontsize=13)
+    ax.legend(loc='upper right', fontsize=11)
+    ax.grid(True, alpha=0.3)
+    plt.tight_layout()
+    plt.savefig(OUTPUT_DIR / "pr_curve.png", dpi=150, bbox_inches='tight')
+    plt.close()
+    print(f"  PR curve saved to {OUTPUT_DIR / 'pr_curve.png'}")
+
+    # Classifier SHAP summary
+    rng_clf = np.random.default_rng(RANDOM_SEED + 5)
+    shap_clf_idx = rng_clf.choice(len(X_clf_te), size=min(5000, len(X_clf_te)), replace=False)
+    X_clf_shap   = X_clf_te.iloc[shap_clf_idx]
+    clf_explainer  = shap.TreeExplainer(clf_model)
+    shap_clf_vals  = clf_explainer.shap_values(X_clf_shap)
+    # LightGBM classifier SHAP: may return list [neg_class, pos_class]
+    if isinstance(shap_clf_vals, list):
+        shap_clf_vals = shap_clf_vals[1]
+
+    plt.figure(figsize=(10, 12))
+    shap.summary_plot(shap_clf_vals, X_clf_shap, max_display=25, show=False,
+                      plot_size=(10, 12))
+    plt.title('SHAP Summary — Retrofit Classifier (is_retrofitted)\n'
+              'LightGBM, positive class (retrofitted)', fontsize=12, pad=10)
+    plt.tight_layout()
+    plt.savefig(OUTPUT_DIR / "shap_summary_classifier.png", dpi=150, bbox_inches='tight')
+    plt.close()
+    print(f"  Classifier SHAP summary saved to "
+          f"{OUTPUT_DIR / 'shap_summary_classifier.png'}")
+
+    # Save classifier artifact
+    clf_artifact = {
+        'model':          clf_model,
+        'encoders':       encoders,
+        'cat_cols':       CAT_COLS,
+        'num_cols':       NUM_COLS,
+        'feature_names':  X.columns.tolist(),
+        'params':         CLF_PARAMS,
+        'roc_auc':        roc_auc,
+        'avg_precision':  avg_prec,
+    }
+    with open(CLF_PATH, 'wb') as f:
+        pickle.dump(clf_artifact, f)
+    print(f"  Classifier saved to {CLF_PATH}")
+
+    # Save classifier report
+    clf_rpt_lines = [
+        "=" * 60,
+        "RETROFIT CLASSIFIER REPORT (is_retrofitted)",
+        "=" * 60,
+        f"Target           : {CLF_TARGET}",
+        f"Train rows       : {len(X_clf_tr):,}",
+        f"Val rows         : {len(X_clf_val):,}",
+        f"Test rows        : {len(X_clf_te):,}",
+        f"Class balance    : {y_clf.mean()*100:.1f}% retrofitted",
+        "",
+        f"Test ROC-AUC     : {roc_auc:.4f}",
+        f"Test Avg-Prec    : {avg_prec:.4f}",
+        "",
+        "-- CLASSIFICATION REPORT (test set) --",
+        clf_report,
+        "",
+        f"-- PARAMS --",
+        str(CLF_PARAMS),
+    ]
+    with open(CLF_RPT_PATH, 'w', encoding='utf-8') as f:
+        f.write('\n'.join(clf_rpt_lines))
+    print(f"  Classifier report saved to {CLF_RPT_PATH}")
+else:
+    print("\nWARNING: 'is_retrofitted' column not found — skipping classifier training.")
+    print("  Re-run 01_clean_and_prepare.py to generate the column.")
+
+
+# ─────────────────────────────────────────────────────────────
 # RANDOM FOREST — COMPARISON MODEL (full training set)
 # ─────────────────────────────────────────────────────────────
 print("\n" + "=" * 60)
@@ -358,9 +548,12 @@ print("=" * 60)
 
 rng_shap = np.random.default_rng(RANDOM_SEED + 2)
 shap_idx  = rng_shap.choice(len(df), size=min(SHAP_N, len(df)), replace=False)
-df_shap   = df.iloc[shap_idx].drop(columns=[TARGET], errors='ignore').copy()
 
-# Apply encoders to shap sample
+# Restrict to exactly the feature columns the model was trained on
+feature_cols = X_train.columns.tolist()
+df_shap = df.iloc[shap_idx][feature_cols].copy()
+
+# Apply encoders to shap sample (categoricals only)
 for col in CAT_COLS:
     if col in df_shap.columns:
         df_shap[col] = encoders[col].transform(df_shap[[col]]).astype(np.float32)
@@ -470,6 +663,12 @@ report_lines.append(fi.head(30).to_string(index=False))
 report_lines.append("")
 report_lines.append("-- TOP 20 FEATURES (SHAP mean |shap|) --")
 report_lines.append(fi_shap.head(20).to_string(index=False))
+report_lines.append("")
+if y_clf is not None:
+    report_lines.append("-- RETROFIT CLASSIFIER (is_retrofitted) --")
+    report_lines.append(f"  Model    : LightGBM Classifier")
+    report_lines.append(f"  Artifact : {CLF_PATH}")
+    report_lines.append(f"  See      : {CLF_RPT_PATH}")
 
 report_text = "\n".join(report_lines)
 with open(REPORT_PATH, 'w', encoding='utf-8') as f:

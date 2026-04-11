@@ -3,25 +3,36 @@
 ===================
 SHAP-based XAI explainer for the retrofit scenario planner.
 
-For each retrofit measure, this script:
+Section A — Regressor SHAP (existing):
+  For each retrofit measure, this script:
   1. Selects example dwellings from the dataset
   2. Computes SHAP values before and after the retrofit
   3. Produces a delta attribution table (which features drove the change)
   4. Generates SHAP waterfall plots (before/after)
   5. Saves per-scenario CSV outputs
 
+Section B — Classifier SHAP (NEW):
+  For the is_retrofitted classifier (lgbm_classifier.pkl):
+  1. Computes global SHAP values on a 10K sample
+  2. Saves shap_summary_classifier.png (beeswarm)
+  3. Aggregates mean SHAP per county → county_shap_avg.csv
+
 The delta SHAP approach shows *why* a retrofit improved the BER — not just
 that it did. This is the core XAI contribution of the project.
 
 SHAP performance note:
-  - Global SHAP (10K rows): done in 02_train_model.py
+  - Global SHAP (10K rows): done in 02_train_model.py for regressor
   - Local SHAP (single row): instant with TreeExplainer — used here
 
 Output (in outputs/scenario_reports/):
-  {measure}_{idx}_shap_before.png     — waterfall before retrofit
-  {measure}_{idx}_shap_after.png      — waterfall after retrofit
-  {measure}_{idx}_delta_shap.csv      — feature-level delta attribution
-  xai_summary.csv                     — cross-measure summary
+  {measure}_{idx}_shap_before.png       — waterfall before retrofit
+  {measure}_{idx}_shap_after.png        — waterfall after retrofit
+  {measure}_{idx}_delta_shap.csv        — feature-level delta attribution
+  xai_summary.csv                       — cross-measure summary
+
+Output (in outputs/):
+  shap_summary_classifier.png           — SHAP beeswarm for classifier
+  county_shap_avg.csv                   — mean SHAP per county (classifier)
 """
 
 import json
@@ -53,6 +64,7 @@ setup_script_logging(OUTPUT_DIR / f"{Path(__file__).stem}.log")
 CONFIG_DIR    = BASE_DIR / "config"
 PARQUET_PATH  = OUTPUT_DIR / "clean_data_55col.parquet"
 LGBM_PATH     = OUTPUT_DIR / "lgbm_model.pkl"
+CLF_PATH      = OUTPUT_DIR / "lgbm_classifier.pkl"
 MEASURES_PATH = CONFIG_DIR / "retrofit_measures.json"
 
 # Number of example dwellings to explain per measure
@@ -372,4 +384,108 @@ xai_summary_df.to_csv(OUTPUT_DIR / "xai_summary.csv", index=False)
 print(f"\nXAI summary saved to {OUTPUT_DIR / 'xai_summary.csv'}")
 
 print(f"\nAll SHAP plots and delta tables saved to {REPORT_DIR}/")
-print("Done.")
+
+
+# ═════════════════════════════════════════════════════════════
+# SECTION B — CLASSIFIER SHAP (is_retrofitted)
+# ═════════════════════════════════════════════════════════════
+print("\n" + "=" * 60)
+print("  SECTION B — CLASSIFIER SHAP (is_retrofitted)")
+print("=" * 60)
+
+if not CLF_PATH.exists():
+    print(f"  SKIP: {CLF_PATH} not found. Run 02_train_model.py first.")
+else:
+    print(f"\nLoading classifier from {CLF_PATH}...")
+    with open(CLF_PATH, 'rb') as f:
+        clf_artifact = pickle.load(f)
+
+    clf_model         = clf_artifact['model']
+    clf_encoders      = clf_artifact['encoders']
+    clf_cat_cols      = clf_artifact['cat_cols']
+    clf_num_cols      = clf_artifact['num_cols']
+    clf_feature_names = clf_artifact['feature_names']
+
+    # ── Prepare classifier feature matrix ────────────────────
+    def prepare_clf_X(df_input: pd.DataFrame) -> pd.DataFrame:
+        X_c = df_input.drop(
+            columns=['BerRating', 'is_retrofitted', 'CountyName',
+                     'EstCO2_kg_per_m2', 'Total_Annual_CO2_Tonnes',
+                     'wall_insulated', 'roof_insulated',
+                     'heating_upgraded', 'fuel_poverty_risk'],
+            errors='ignore'
+        ).copy()
+        for col in clf_cat_cols:
+            if col in X_c.columns:
+                X_c[col] = clf_encoders[col].transform(X_c[[col]]).astype(np.float32)
+        for col in clf_num_cols:
+            if col in X_c.columns:
+                X_c[col] = X_c[col].astype(np.float32)
+        missing = [c for c in clf_feature_names if c not in X_c.columns]
+        for c in missing:
+            X_c[c] = 0.0
+        return X_c[clf_feature_names]
+
+    # ── Global SHAP on 10K sample ─────────────────────────────
+    SHAP_N_CLF = 10_000
+    rng_b = np.random.default_rng(RANDOM_SEED + 10)
+    clf_shap_idx = rng_b.choice(len(df), size=min(SHAP_N_CLF, len(df)), replace=False)
+    df_clf_shap  = df.iloc[clf_shap_idx].copy()
+
+    print(f"\nComputing classifier SHAP values for {len(df_clf_shap):,} rows...")
+    X_clf_shap   = prepare_clf_X(df_clf_shap)
+    clf_explainer = shap.TreeExplainer(clf_model)
+    shap_clf_vals = clf_explainer.shap_values(X_clf_shap)
+    if isinstance(shap_clf_vals, list):
+        shap_clf_vals = shap_clf_vals[1]   # positive class
+
+    # ── SHAP beeswarm (global) ────────────────────────────────
+    plt.figure(figsize=(10, 12))
+    shap.summary_plot(shap_clf_vals, X_clf_shap,
+                      max_display=25, show=False, plot_size=(10, 12))
+    plt.title('SHAP Summary — Retrofit Classifier (is_retrofitted)\n'
+              'Positive class: home has undergone any retrofit measure',
+              fontsize=12, pad=10)
+    plt.tight_layout()
+    plt.savefig(OUTPUT_DIR / "shap_summary_classifier.png",
+                dpi=150, bbox_inches='tight')
+    plt.close()
+    print(f"  Classifier SHAP beeswarm saved to "
+          f"{OUTPUT_DIR / 'shap_summary_classifier.png'}")
+
+    # ── County-level mean SHAP ────────────────────────────────
+    if 'CountyName' in df_clf_shap.columns:
+        print("\nAggregating mean |SHAP| per county...")
+        shap_df = pd.DataFrame(shap_clf_vals,
+                               columns=clf_feature_names,
+                               index=df_clf_shap.index)
+        shap_df['CountyName'] = df_clf_shap['CountyName'].values
+
+        # Mean absolute SHAP per feature per county
+        county_shap = (
+            shap_df.groupby('CountyName')
+                   .mean(numeric_only=True)
+                   .abs()
+        )
+        # Overall mean |SHAP| across features per county
+        county_shap['mean_abs_shap_overall'] = county_shap.mean(axis=1)
+        county_shap = county_shap.reset_index().sort_values(
+            'mean_abs_shap_overall', ascending=False
+        )
+        county_shap.to_csv(OUTPUT_DIR / "county_shap_avg.csv", index=False)
+        print(f"  County SHAP averages saved to "
+              f"{OUTPUT_DIR / 'county_shap_avg.csv'}")
+
+        # Top 5 features driving retrofit classification
+        mean_abs = np.abs(shap_clf_vals).mean(axis=0)
+        top_clf_feats = sorted(
+            zip(clf_feature_names, mean_abs.tolist()),
+            key=lambda x: x[1], reverse=True
+        )[:10]
+        print("\n  Top 10 features for retrofit classification (mean |SHAP|):")
+        for feat, val in top_clf_feats:
+            print(f"    {feat:<45s}: {val:.4f}")
+    else:
+        print("\n  CountyName not in SHAP sample — skipping county_shap_avg.csv")
+
+print("\nDone.")
