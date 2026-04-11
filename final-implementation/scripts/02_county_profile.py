@@ -243,9 +243,10 @@ ax.text(agg['mean_ber'].max() * 0.97, agg['retrofit_rate'].min() * 1.1 + 1,
         ha='right', va='bottom', fontsize=8,
         color='#cc2222', alpha=0.7)
 
-# Size legend
+# Size legend — cap display sizes so labels don't overlap in the legend box
+LEGEND_MAX_SZ = 400  # legend marker cap (display only, not data)
 for n_homes, label in [(50_000, '50k'), (200_000, '200k'), (400_000, '400k')]:
-    sz = n_homes / max_homes * 2500
+    sz = n_homes / max_homes * LEGEND_MAX_SZ
     ax.scatter([], [], s=sz, c='#999999', alpha=0.7, edgecolors='#333333',
                linewidths=0.6, label=f'{label} homes')
 
@@ -254,7 +255,8 @@ ax.set_ylabel('Retrofit Rate (% of homes with any retrofit measure)', fontsize=1
 ax.set_title('Irish County Building Stock — BER Performance vs Retrofit Uptake\n'
              'Bubble size = number of homes | Colour = fuel poverty risk rate',
              fontsize=13, pad=14)
-ax.legend(loc='lower right', fontsize=9, framealpha=0.85)
+ax.legend(loc='lower right', fontsize=9, framealpha=0.85,
+          labelspacing=1.2, handletextpad=1.0)
 ax.grid(True, alpha=0.3)
 
 plt.tight_layout()
