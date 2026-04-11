@@ -3,6 +3,5 @@
 .agents/
 .vscode/
 .venv/
-valid-imp/.venv/
-valid-imp/venv/
-valid-imp/outputs/
+final-implementation/venv/
+final-implementation/outputs/
