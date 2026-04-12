@@ -1,3 +1,7 @@
 *.csv
 *.parquet
 .agents/
+.vscode/
+.venv/
+final-implementation/venv/
+final-implementation/outputs/
